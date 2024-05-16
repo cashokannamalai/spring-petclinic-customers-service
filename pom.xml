@@ -7,6 +7,12 @@
 	<artifactId>spring-petclinic-customers-service</artifactId>
 	<packaging>jar</packaging>
 	<description>Spring PetClinic Customers Service</description>
+	<project>
+    ...
+    <version>1.0.0</version>
+    ...
+</project>
+
 
 	<!-- parent>
 		<groupId>org.springframework.samples</groupId>
