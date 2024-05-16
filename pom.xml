@@ -5,14 +5,10 @@
 
 	<groupId>org.springframework.samples.petclinic.client</groupId>
 	<artifactId>spring-petclinic-customers-service</artifactId>
+	<version>1.0.0</version>
 	<packaging>jar</packaging>
 	<description>Spring PetClinic Customers Service</description>
-	<project>
-    ...
-    <version>1.0.0</version>
-    ...
-</project>
-
+	
 
 	<!-- parent>
 		<groupId>org.springframework.samples</groupId>
