@@ -136,14 +136,15 @@
 	    <version>3.25.3</version>
             <scope>test</scope>
         </dependency>
-	</dependencies>
-
-	<!-- Jakarta Persistence API -->
-        <dependency>
+	<dependency>
             <groupId>jakarta.persistence</groupId>
             <artifactId>jakarta.persistence-api</artifactId>
             <version>3.0.0</version>
         </dependency>
+	</dependencies>
+
+	<!-- Jakarta Persistence API -->
+        
 
          <build>
         <plugins>
