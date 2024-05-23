@@ -8,7 +8,12 @@ on:
       - '**'
 
 jobs:
+  Checkout:
+    steps:
+      - name: checkout
+        uses: cloudbees-io/checkout@v1
   Build:
+    needs: Checkout
     steps:
       - uses: docker://alpine/git:latest
         run: |
@@ -22,11 +27,9 @@ jobs:
         run: |
           mvn clean install -DskipTests=true
 
-  scan:
+  SonarAnalysis:
     needs: Build
     steps:
-      
-
       - uses: cloudbees-io/sonarqube-sast-scan-code@v1
         name: Scan
         kind: scan
