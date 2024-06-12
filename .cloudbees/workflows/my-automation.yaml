@@ -81,7 +81,7 @@ jobs:
         NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
         NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       run: |
-        mvn deploy -DskipTests -X \
+        mvn deploy -DskipTests=true \
           -DaltDeploymentRepository=nexus::default::https://${NEXUS_USERNAME}:${NEXUS_PASSWORD}@nexus.preview.cb-demos.io/repository/customers-service/
 
     - name: List directory contents after Publish
