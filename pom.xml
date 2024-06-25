@@ -236,13 +236,11 @@
     <groupId>some.group</groupId>
     <artifactId>some-artifact</artifactId>
     <version>1.0.0</version>
-    <exclusions>
-        <exclusion>
+     </dependency>     
+    <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
             <version>6.1.10</version>
-        </exclusion>
-    </exclusions>
 </dependency>
         <dependency>
     <groupId>org.springframework</groupId>
