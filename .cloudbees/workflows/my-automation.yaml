@@ -27,7 +27,7 @@ jobs:
         run: |
           mvn clean install -DskipTests=true
 
-  SonarAnalysis:
+  StaticAnalysis:
     needs: Build
     steps:
     - uses: docker://alpine/git:latest
@@ -125,7 +125,7 @@ jobs:
           INSTANCE_ID=$(cat instance_id.txt)
           aws ec2 wait instance-running --instance-ids $INSTANCE_ID
           PUBLIC_DNS=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query 'Reservations[0].Instances[0].PublicDnsName' --output text)
-          echo $PUBLIC_DNS:9090 > public_dns.txt
+          echo $PUBLIC_DNS:8081 > public_dns.txt
           cat public_dns.txt
 
       - name: Add delay to ensure instance is ready
