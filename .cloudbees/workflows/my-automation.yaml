@@ -63,20 +63,37 @@ jobs:
         project-key: customers-service
         token: 20e414018be1508e8a472229e7ec07da1a13cfa1
 
-  CreateEC2Instance:
-    needs: [SonarAnalysis]
+  ArtifactPublish:
+    needs: [StaticAnalysis]
     steps:
       - uses: docker://alpine/git:latest
         run: |
           git config --global --add safe.directory /cloudbees/workspace
+          echo "Listing directory contents before Build:"
+          ls -lR /cloudbees/workspace
 
       - name: checkout
         uses: cloudbees-io/checkout@v1
 
-      - name: Build 
+      - name: Publish to Nexus
         uses: docker://maven:3-eclipse-temurin-17
+        env:
+          NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+
         run: |
-          mvn clean install 
+          mvn deploy -DskipTests \
+            -DaltDeploymentRepository=nexus::default::https://${NEXUS_USERNAME}:${NEXUS_PASSWORD}@nexus.preview.cb-demos.io/repository/Petclinic/
+
+      - name: List directory contents after Publish
+        uses: docker://alpine:latest
+        run: |
+          echo "Current directory: $(pwd)"
+          ls -lR /cloudbees/workspace
+
+  DeployApplicationAWS:
+    needs: [ArtifactPublish]
+    steps:
       - name: Configure AWS credentials
         uses: cloudbees-io/configure-aws-credentials@v1
         with:
@@ -108,39 +125,44 @@ jobs:
           INSTANCE_ID=$(cat instance_id.txt)
           aws ec2 wait instance-running --instance-ids $INSTANCE_ID
           PUBLIC_DNS=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query 'Reservations[0].Instances[0].PublicDnsName' --output text)
-          echo $PUBLIC_DNS > public_dns.txt
+          echo $PUBLIC_DNS:9090 > public_dns.txt
           cat public_dns.txt
 
       - name: Add delay to ensure instance is ready
         uses: docker://alpine:latest
         run: |
-         echo "Waiting for 60 seconds to ensure the instance is ready..."
-         sleep 60
+          echo "Waiting for 60 seconds to ensure the instance is ready..."
+          sleep 60
 
-  
-    
+      - name: Download artifact from Nexus
+        uses: docker://alpine:latest
+        run: |
+          apk update
+          apk add curl
+          curl -u ${NEXUS_USERNAME}:${NEXUS_PASSWORD} -O https://nexus.preview.cb-demos.io/repository/Petclinic/org/springframework/samples/petclinic/customer/spring-petclinic-customers-service/1.0.0/spring-petclinic-customers-service-1.0.0.jar
+          ls
+
       - name: Transfer artifact to EC2 instance
         uses: docker://alpine:latest
         run: |
-         apk update
-         apk add openssh-client
-         PUBLIC_DNS=$(cat public_dns.txt)
-         scp -o StrictHostKeyChecking=no -i ashokpetclinic.pem  target/spring-petclinic-customers-service-1.0.0.jar ubuntu@$PUBLIC_DNS:/home/ubuntu/
-
+          apk update
+          apk add openssh-client
+          PUBLIC_DNS=$(cat public_dns.txt | cut -d ':' -f 1)
+          scp -o StrictHostKeyChecking=no -i ashokpetclinic.pem  spring-petclinic-customers-service-1.0.0.jar ubuntu@$PUBLIC_DNS:/home/ubuntu/
 
       - name: Install Java 17 on EC2 instance
         uses: docker://alpine:latest
         run: |
-         apk update
-         apk add openssh-client
-         PUBLIC_DNS=$(cat public_dns.txt)
-         ssh -o StrictHostKeyChecking=no -i ashokpetclinic.pem ubuntu@$PUBLIC_DNS << 'EOF'
-          sudo apt update
-          sudo apt install -y openjdk-17-jdk
-          java -version
-          nohup java -jar /home/ubuntu/spring-petclinic-customers-service-1.0.0.jar > /home/ubuntu/customer-server.log 2>&1 &
-          disown
-         EOF
+          apk update
+          apk add openssh-client
+          PUBLIC_DNS=$(cat public_dns.txt | cut -d ':' -f 1)
+          ssh -o StrictHostKeyChecking=no -i ashokpetclinic.pem ubuntu@$PUBLIC_DNS << 'EOF'
+            sudo apt update
+            sudo apt install -y openjdk-17-jdk
+            java -version
+            nohup java -jar /home/ubuntu/spring-petclinic-customers-service-1.0.0.jar > /home/ubuntu/customer-server.log 2>&1 &
+            disown
+          EOF
 
       - name: Push instance_id.txt to repository
         uses: docker://alpine:latest
