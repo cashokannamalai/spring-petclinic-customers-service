@@ -41,12 +41,12 @@ jobs:
       kind: scan
       with:
         server-url: https://sonarqube.cb-demos.io
-        username: admin
-        password: admin123
+        username: ${{ secrets.username }}
+        password: ${{ secrets.password }}
         language: Java
 
     - uses: cloudbees-io/sonarqube-bundled-sast-scan-code@v2
-      name: Scan 2
+      name: Scan with Java
       kind: scan
       with:
         language: JAVA
@@ -61,7 +61,7 @@ jobs:
       name: Scan GP
       with:
         project-key: customers-service
-        token: 20e414018be1508e8a472229e7ec07da1a13cfa1
+        token: ${{ secrets.token }}
 
   ArtifactPublish:
     needs: [StaticAnalysis]
@@ -164,16 +164,6 @@ jobs:
             disown
           EOF
 
-      - name: Push instance_id.txt to repository
-        uses: docker://alpine:latest
-        run: |
-          apk update
-          apk add git
-          git config --global user.email "c_aannamalai@cloudbees.com"
-          git config --global user.name "cashokannamalai"
-          git checkout -b ashok
-          git add instance_id.txt
-          git commit -m "Update instance_id.txt with new EC2 instance ID"
-          git push -f origin ashok
+      
          
         
