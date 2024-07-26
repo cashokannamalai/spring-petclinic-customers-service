@@ -85,6 +85,6 @@ jobs:
         with:
           dockerfile: Dockerfile
           context: .
-          destination: ${{ secrets.STAGING_DOCKER_REGISTRY }}/${{ secrets.STAGING_DOCKER_USERNAME }}customerserver/:3.2.4
+          destination: ${{ secrets.STAGING_DOCKER_REGISTRY }}/${{ secrets.STAGING_DOCKER_USERNAME }}customerserver:1.0.0
           build-args: docker images
   
