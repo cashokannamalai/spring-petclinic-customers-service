@@ -1,37 +1,61 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: customers-service-deployment
+  name: customer-service-deployment
   namespace: ashok
   labels:
-    app: customers-service
+    app: customerservice
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: customers-service
+      app: customerservice
   template:
     metadata:
       labels:
-        app: customers-service
+        app: customerservice
     spec:
       containers:
-        - name: customers-service
+        - name: customerservice
           image: caannamalai/customerserver:1.0.0
           ports:
             - containerPort: 8080
+
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
-  name: customers-service
+  name: customer-service
   namespace: ashok
   labels:
-    app: customers-service
+    app: customerservice
 spec:
-  type: LoadBalancer
-  ports:
-    - port: 8080
-      targetPort: 8080
   selector:
-    app: customers-service
+    app: customerservice
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: customerservice-ingress
+  namespace: ashok
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host:  ""
+      http:
+        paths:
+          - path: /customer
+            pathType: Prefix
+            backend:
+              service:
+                name: customer-service
+                port:
+                  number: 8080
