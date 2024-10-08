@@ -104,3 +104,4 @@ jobs:
         run: |
           kubectl apply -f /cloudbees/workspace/deployment-service.yaml
           kubectl get ingress -n ashok
+          
