@@ -4,11 +4,26 @@ spring:
   config:
     import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888/}
 
-
+eureka:
+  instance:
+    # Enable registering multiple app instances with random server ports
+    instance-id: ${spring.application.name}:${random.uuid}
 
 ---
+
 spring:
   config:
     activate:
       on-profile: docker
     import: configserver:http://config-server:8888
+
+zipkin:
+  baseUrl: http://tracing-server:9411
+
+server:
+  port: 8081
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://discovery-server:8761/eureka/
